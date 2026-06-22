@@ -76,6 +76,10 @@ Plataforma/
 | GET | `/api/processes/{id}` | Consultar processo | Sanctum |
 | POST | `/api/processes/{id}/response` | Enviar resposta | Sanctum |
 
+## Documentação
+
+- [Modelagem do Sistema](/storage/modelagem_sistema.pdf) — Diagramas, arquitetura e especificação técnica do sistema.
+
 ## Licença
 
 Este projeto é open-source sob a licença MIT.
