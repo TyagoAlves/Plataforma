@@ -27,22 +27,6 @@
             @endisset
 
             <main>
-                @if (session('success'))
-                    <div class="max-w-7xl mx-auto mt-4 px-4 sm:px-6 lg:px-8">
-                        <div class="px-4 py-3 rounded-lg bg-green-900/20 border border-green-500/30 text-green-300 text-sm backdrop-blur-xl">
-                            {{ session('success') }}
-                        </div>
-                    </div>
-                @endif
-
-                @if (session('error'))
-                    <div class="max-w-7xl mx-auto mt-4 px-4 sm:px-6 lg:px-8">
-                        <div class="px-4 py-3 rounded-lg bg-red-900/20 border border-red-500/30 text-red-300 text-sm backdrop-blur-xl">
-                            {{ session('error') }}
-                        </div>
-                    </div>
-                @endif
-
                 {{ $slot }}
             </main>
         </div>
