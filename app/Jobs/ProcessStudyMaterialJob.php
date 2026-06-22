@@ -8,6 +8,7 @@ use App\Models\QuizQuestion;
 use App\Models\Slide;
 use App\Models\Podcast;
 use App\Services\GeminiService;
+use App\Services\TtsService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Log;
@@ -15,6 +16,10 @@ use Illuminate\Support\Facades\Log;
 class ProcessStudyMaterialJob implements ShouldQueue
 {
     use Queueable;
+
+    public int $timeout = 300;
+    public int $tries = 3;
+    public array $backoff = [10, 30, 60];
 
     public function __construct(
         public StudyMaterial $material
@@ -25,6 +30,7 @@ class ProcessStudyMaterialJob implements ShouldQueue
         $content = $this->material->content;
         if (empty($content)) {
             $this->material->update(['status' => 'error']);
+            Log::error('Material processing failed: empty content', ['material_id' => $this->material->id]);
             return;
         }
 
@@ -34,59 +40,26 @@ class ProcessStudyMaterialJob implements ShouldQueue
         $slidesGenerated = false;
         $podcastGenerated = false;
 
-        if ($gemini->isAvailable()) {
-            $questions = $gemini->generateQuiz($content);
-            if ($questions) {
-                $quiz = Quiz::create([
-                    'user_id' => $this->material->user_id,
-                    'study_material_id' => $this->material->id,
-                    'title' => "Simulado: {$this->material->title}",
-                    'total_questions' => count($questions),
-                ]);
-
-                foreach ($questions as $i => $q) {
-                    QuizQuestion::create([
-                        'quiz_id' => $quiz->id,
-                        'question' => $q['question'] ?? 'Questão',
-                        'options' => $q['options'] ?? [],
-                        'correct_answer' => $q['correct_answer'] ?? '',
-                        'order' => $i,
-                    ]);
-                }
+        try {
+            if ($gemini->isAvailable()) {
+                $this->processWithGemini($gemini, $content, $quizGenerated, $slidesGenerated, $podcastGenerated);
+            } else {
+                $this->generateMockContent($content);
                 $quizGenerated = true;
-            }
-
-            $slidesData = $gemini->generateSlides($content);
-            if ($slidesData) {
-                Slide::create([
-                    'user_id' => $this->material->user_id,
-                    'study_material_id' => $this->material->id,
-                    'title' => "Slides: {$this->material->title}",
-                    'slides' => $slidesData,
-                ]);
                 $slidesGenerated = true;
-            }
-
-            $script = $gemini->generatePodcastScript($content);
-            if ($script) {
-                Podcast::create([
-                    'user_id' => $this->material->user_id,
-                    'study_material_id' => $this->material->id,
-                    'title' => "Podcast: {$this->material->title}",
-                    'script' => $script,
-                    'duration_seconds' => strlen($script) / 10,
-                ]);
                 $podcastGenerated = true;
             }
-        }
 
-        if (!$gemini->isAvailable()) {
-            $this->generateMockContent($content);
+            $this->material->update(['status' => 'processed']);
+        } catch (\Exception $e) {
+            $this->material->update(['status' => 'error']);
+            Log::error('Material processing exception', [
+                'material_id' => $this->material->id,
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            throw $e;
         }
-
-        $this->material->update([
-            'status' => 'processed',
-        ]);
 
         Log::info('Material processed', [
             'material_id' => $this->material->id,
@@ -94,6 +67,78 @@ class ProcessStudyMaterialJob implements ShouldQueue
             'slides' => $slidesGenerated,
             'podcast' => $podcastGenerated,
         ]);
+    }
+
+    private function processWithGemini(GeminiService $gemini, string $content, bool &$quizGenerated, bool &$slidesGenerated, bool &$podcastGenerated): void
+    {
+        $questions = $gemini->generateQuiz($content);
+        if ($questions) {
+            $quiz = Quiz::create([
+                'user_id' => $this->material->user_id,
+                'study_material_id' => $this->material->id,
+                'title' => "Simulado: {$this->material->title}",
+                'total_questions' => count($questions),
+            ]);
+
+            foreach ($questions as $i => $q) {
+                QuizQuestion::create([
+                    'quiz_id' => $quiz->id,
+                    'question' => $q['question'] ?? 'Questão',
+                    'options' => $q['options'] ?? [],
+                    'correct_answer' => $q['correct_answer'] ?? '',
+                    'order' => $i,
+                ]);
+            }
+            $quizGenerated = true;
+        }
+
+        $slidesData = $gemini->generateSlides($content);
+        if ($slidesData) {
+            Slide::create([
+                'user_id' => $this->material->user_id,
+                'study_material_id' => $this->material->id,
+                'title' => "Slides: {$this->material->title}",
+                'slides' => $slidesData,
+            ]);
+            $slidesGenerated = true;
+        }
+
+        $script = $gemini->generatePodcastScript($content);
+        if ($script) {
+            $podcast = Podcast::create([
+                'user_id' => $this->material->user_id,
+                'study_material_id' => $this->material->id,
+                'title' => "Podcast: {$this->material->title}",
+                'script' => $script,
+                'duration_seconds' => strlen($script) / 10,
+            ]);
+            $podcastGenerated = true;
+
+            $this->generatePodcastAudio($podcast, $script);
+        }
+    }
+
+    private function generatePodcastAudio(Podcast $podcast, string $script): void
+    {
+        try {
+            $tts = app(TtsService::class);
+            $speechText = $tts->scriptToSpeechText($script);
+            $filename = 'podcast_' . $podcast->id . '_' . time();
+            $audioPath = $tts->generateAudio($speechText, $filename);
+
+            if ($audioPath) {
+                $duration = $tts->estimateDuration($speechText);
+                $podcast->update([
+                    'audio_path' => $audioPath,
+                    'duration_seconds' => $duration,
+                ]);
+            }
+        } catch (\Exception $e) {
+            Log::warning('Podcast audio generation failed during job processing', [
+                'podcast_id' => $podcast->id,
+                'message' => $e->getMessage(),
+            ]);
+        }
     }
 
     private function generateMockContent(string $content): void
@@ -146,12 +191,14 @@ class ProcessStudyMaterialJob implements ShouldQueue
             . "[Convidado]: Primeiro, precisamos entender os fundamentos. Depois, aplicar na prática.\n\n"
             . "[Anfitrião]: Excelente resumo! Obrigado pela participação.";
 
-        Podcast::create([
+        $podcast = Podcast::create([
             'user_id' => $this->material->user_id,
             'study_material_id' => $this->material->id,
             'title' => "Podcast: {$this->material->title}",
             'script' => $script,
             'duration_seconds' => strlen($script) / 10,
         ]);
+
+        $this->generatePodcastAudio($podcast, $script);
     }
 }

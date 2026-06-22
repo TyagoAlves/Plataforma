@@ -18,6 +18,9 @@
                     <x-nav-link :href="route('study.opencode.index')" :active="request()->routeIs('study.opencode.*')">
                         {{ __('OpenCode') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('processes.index')" :active="request()->routeIs('processes.*')">
+                        {{ __('Processos') }}
+                    </x-nav-link>
                 </div>
             </div>
 

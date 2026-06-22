@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\StudyMaterial;
 use App\Models\Subject;
-use App\Jobs\ProcessStudyMaterialJob;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -43,8 +42,6 @@ class StudyMaterialController extends Controller
 
         $material = StudyMaterial::create($data);
 
-        ProcessStudyMaterialJob::dispatch($material);
-
         return redirect()->route('study.dashboard')
             ->with('success', 'Material adicionado! IA está processando o conteúdo em segundo plano...');
     }
@@ -59,13 +56,36 @@ class StudyMaterialController extends Controller
     public function destroy(StudyMaterial $material)
     {
         $this->authorizeAccess($material);
+
+        $userId = $material->user_id;
+
         if ($material->file_path) {
             Storage::disk('public')->delete($material->file_path);
         }
+
+        foreach ($material->quizzes as $quiz) {
+            $quiz->questions()->delete();
+            $quiz->delete();
+        }
+        foreach ($material->slides as $slide) {
+            $slide->delete();
+        }
+        foreach ($material->podcasts as $podcast) {
+            if ($podcast->audio_path) {
+                Storage::disk('public')->delete($podcast->audio_path);
+            }
+            $podcast->delete();
+        }
+
+        $userStorageDir = storage_path("app/public/users/{$userId}");
+        if (is_dir($userStorageDir)) {
+            \Illuminate\Support\Facades\File::cleanDirectory($userStorageDir);
+        }
+
         $material->delete();
 
         return redirect()->route('study.dashboard')
-            ->with('success', 'Material removido.');
+            ->with('success', 'Material e todos os itens vinculados removidos.');
     }
 
     private function extractTextFromFile(string $path, string $type): string

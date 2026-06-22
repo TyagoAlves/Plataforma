@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Podcast;
 use App\Models\StudyMaterial;
+use App\Services\TtsService;
 use Illuminate\Http\Request;
 
 class PodcastController extends Controller
@@ -39,8 +40,36 @@ class PodcastController extends Controller
             'duration_seconds' => rand(300, 900),
         ]);
 
+        try {
+            $tts = app(TtsService::class);
+            $speechText = $tts->scriptToSpeechText($script);
+            $filename = 'podcast_' . $podcast->id . '_' . time();
+            $audioPath = $tts->generateAudio($speechText, $filename);
+
+            if ($audioPath) {
+                $duration = $tts->estimateDuration($speechText);
+                $podcast->update([
+                    'audio_path' => $audioPath,
+                    'duration_seconds' => $duration,
+                ]);
+            }
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Podcast audio generation failed', [
+                'podcast_id' => $podcast->id,
+                'message' => $e->getMessage(),
+            ]);
+        }
+
         return redirect()->route('study.podcasts.show', $podcast)
             ->with('success', 'Podcast gerado por IA!');
+    }
+
+    public function destroy(Podcast $podcast)
+    {
+        $this->authorizeAccess($podcast);
+        $podcast->delete();
+        return redirect()->route('study.podcasts.index')
+            ->with('success', 'Podcast removido.');
     }
 
     private function mockGenerateScript(string $content): string

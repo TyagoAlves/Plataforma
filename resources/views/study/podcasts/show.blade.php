@@ -2,7 +2,14 @@
     <x-slot name="header">
         <div class="flex items-center justify-between">
             <h2 class="font-semibold text-xl text-gray-100 leading-tight">{{ $podcast->title }}</h2>
-            <a href="{{ route('study.podcasts.index') }}" class="text-sm text-gray-400 hover:text-white transition">Voltar</a>
+            <div class="flex items-center gap-2">
+                <a href="{{ route('study.podcasts.index') }}" class="text-sm text-gray-400 hover:text-white transition">Voltar</a>
+                <form method="POST" action="{{ route('study.podcasts.destroy', $podcast) }}" class="inline" onsubmit="return confirm('Remover este podcast?')">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="text-sm text-red-400 hover:text-red-300 transition ml-2">Excluir</button>
+                </form>
+            </div>
         </div>
     </x-slot>
 
@@ -19,17 +26,41 @@
 
                 <div class="text-center mb-4">
                     <p class="text-sm text-gray-500">Duração: {{ gmdate('i:s', $podcast->duration_seconds) }} min</p>
+
                     @if ($podcast->audio_path)
-                        <audio controls class="w-full mt-4">
-                            <source src="{{ asset('storage/' . $podcast->audio_path) }}" type="audio/mpeg">
-                        </audio>
+                        <div class="mt-4 backdrop-blur-lg bg-white/5 border border-white/10 rounded-xl p-4">
+                            <audio controls class="w-full" autoplay>
+                                <source src="{{ asset('storage/' . $podcast->audio_path) }}" type="audio/mpeg">
+                                Seu navegador não suporta o elemento de áudio.
+                            </audio>
+                            <div class="flex items-center justify-between mt-2 text-xs text-gray-500">
+                                <span>{{ $podcast->created_at->format('d/m/Y H:i') }}</span>
+                                <a href="{{ asset('storage/' . $podcast->audio_path) }}" download
+                                   class="text-indigo-400 hover:text-indigo-300 transition flex items-center gap-1">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                    </svg>
+                                    Download MP3
+                                </a>
+                            </div>
+                        </div>
                     @else
                         <div class="backdrop-blur-lg bg-white/5 border border-white/10 rounded-lg p-4 mt-4">
-                            <p class="text-gray-400 text-sm">Áudio não disponível. Veja o script abaixo:</p>
+                            <p class="text-gray-400 text-sm">Áudio não disponível no momento. Veja o script abaixo:</p>
                         </div>
                     @endif
                 </div>
             </div>
+
+            @if ($podcast->studyMaterial)
+                <div class="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-4">
+                    <p class="text-xs text-gray-500">Baseado em:
+                        <a href="{{ route('study.materials.show', $podcast->studyMaterial) }}" class="text-indigo-400 hover:text-indigo-300">
+                            {{ $podcast->studyMaterial->title }}
+                        </a>
+                    </p>
+                </div>
+            @endif
 
             @if ($podcast->script)
                 <div class="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-6">

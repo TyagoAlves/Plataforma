@@ -21,6 +21,15 @@ class SlideController extends Controller
         return view('study.slides.show', compact('slide'));
     }
 
+    public function destroy(Slide $slide)
+    {
+        $this->authorizeAccess($slide);
+        $slide->delete();
+
+        return redirect()->route('study.slides.index')
+            ->with('success', 'Slides removidos.');
+    }
+
     public function generateFromMaterial(Request $request)
     {
         $validated = $request->validate([

@@ -75,11 +75,22 @@
                 </div>
             </div>
 
-            <div class="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-6 text-center">
-                <a href="{{ route('study.materials.create') }}" class="inline-flex items-center px-6 py-3 bg-indigo-600 border border-transparent rounded-lg font-semibold text-sm text-white uppercase tracking-widest hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 focus:ring-offset-gray-900 transition ease-in-out duration-150">
-                    + Novo Material de Estudo
-                </a>
-                <p class="text-gray-500 text-sm mt-2">Faça upload de PDFs, textos ou digite sua matéria</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-6 text-center">
+                    <a href="{{ route('study.materials.create') }}" class="inline-flex items-center px-6 py-3 bg-indigo-600 border border-transparent rounded-lg font-semibold text-sm text-white uppercase tracking-widest hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 focus:ring-offset-gray-900 transition ease-in-out duration-150">
+                        + Novo Material de Estudo
+                    </a>
+                    <p class="text-gray-500 text-sm mt-2">Faça upload de PDFs, textos ou digite sua matéria</p>
+                </div>
+
+                <div class="backdrop-blur-xl bg-gradient-to-br from-indigo-500/10 to-purple-500/10 border border-indigo-500/20 rounded-2xl p-6 text-center group hover:bg-white/5 transition">
+                    <a href="{{ route('study.opencode.index') }}" class="block">
+                        <p class="text-3xl mb-2">🤖</p>
+                        <p class="text-lg font-medium text-indigo-300 group-hover:text-indigo-200 transition">OpenCode Assistente</p>
+                        <p class="text-gray-500 text-sm mt-1">Peça ajuda com código, gere quizzes, execute scripts</p>
+                        <span class="inline-block mt-3 text-xs text-indigo-400/60 group-hover:text-indigo-400 transition">Abir →</span>
+                    </a>
+                </div>
             </div>
 
         </div>

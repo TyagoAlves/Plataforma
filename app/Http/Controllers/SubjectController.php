@@ -53,6 +53,12 @@ class SubjectController extends Controller
     public function destroy(Subject $subject)
     {
         $this->authorizeAccess($subject);
+
+        if ($subject->studyMaterials()->count() > 0) {
+            return redirect()->back()
+                ->with('error', 'Não é possível excluir: existem materiais vinculados a esta matéria.');
+        }
+
         $subject->delete();
 
         return redirect()->route('study.subjects.index')

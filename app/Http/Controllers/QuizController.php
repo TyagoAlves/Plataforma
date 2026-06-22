@@ -99,6 +99,16 @@ class QuizController extends Controller
         return view('study.quizzes.results', compact('quiz'));
     }
 
+    public function destroy(Quiz $quiz)
+    {
+        $this->authorizeAccess($quiz);
+        $quiz->questions()->delete();
+        $quiz->delete();
+
+        return redirect()->route('study.quizzes.index')
+            ->with('success', 'Simulado removido.');
+    }
+
     public function generateFromMaterial(Request $request)
     {
         $validated = $request->validate([
