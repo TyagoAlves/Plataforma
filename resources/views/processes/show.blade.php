@@ -34,7 +34,7 @@
                         {{ ucfirst($process->type) }}
                     </span>
                     <span class="text-sm text-gray-400 bg-white/5 px-3 py-1 rounded-full border border-white/10">
-                        {{ $process->category->name }}
+                        {{ $process->category?->name }}
                     </span>
                 </div>
 

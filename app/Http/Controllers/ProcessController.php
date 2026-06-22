@@ -44,16 +44,17 @@ class ProcessController extends Controller
 
     public function show(Process $process)
     {
-        $process->load('category', 'response');
+        $process->load('category');
 
-        if (!$process->response) {
-            $aiSuggestion = $this->mockAiSuggestion($process->content);
-            $process->response()->create([
-                'ai_suggestion' => $aiSuggestion,
+        $process->response()->firstOrCreate(
+            ['process_id' => $process->id],
+            [
+                'ai_suggestion' => $this->mockAiSuggestion($process->content),
                 'status' => 'suggested',
-            ]);
-            $process->load('response');
-        }
+            ]
+        );
+
+        $process->load('response');
 
         return view('processes.show', compact('process'));
     }
@@ -62,12 +63,10 @@ class ProcessController extends Controller
     {
         $request->validate(['final_response' => 'required|string']);
 
-        if ($process->response) {
-            $process->response->update([
-                'final_response' => $request->final_response,
-                'status' => 'submitted',
-            ]);
-        }
+        $process->response()->updateOrCreate(
+            ['process_id' => $process->id],
+            ['final_response' => $request->final_response, 'status' => 'submitted']
+        );
 
         return redirect()->route('processes.show', $process)
             ->with('success', 'Resposta enviada com sucesso!');

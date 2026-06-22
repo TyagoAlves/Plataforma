@@ -12,6 +12,13 @@
                 <p class="text-gray-400">Selecione uma categoria para visualizar os processos.</p>
             </div>
 
+            @if($categories->isEmpty())
+                <div class="backdrop-blur-xl bg-white/5 border border-white/10 rounded-xl p-12 text-center">
+                    <p class="text-gray-400 text-lg">Nenhuma categoria disponível.</p>
+                    <p class="text-gray-500 text-sm mt-2">As categorias aparecerão aqui quando forem cadastradas.</p>
+                </div>
+            @endif
+
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 @foreach($categories as $category)
                     <a href="{{ route('processes.index', ['category_id' => $category->id]) }}" class="group">
