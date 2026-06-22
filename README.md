@@ -1,29 +1,42 @@
-# Plataforma de Gestão de Processos
+# MindContainer - Plataforma Interativa de Estudos com IA
 
-Sistema web para gerenciamento de processos documentais com sugestões de resposta por IA, desenvolvido com Laravel.
+Plataforma de estudos baseada em IA que transforma materiais acadêmicos em simulados interativos, slides explicativos e podcasts didáticos.
 
 ## Funcionalidades
 
-- **Landing Page** — Apresentação institucional do sistema
-- **Dashboard** — Visão geral com categorias e contagem de processos
-- **Gestão de Processos** — Listagem, filtros (data, tipo, palavra-chave), detalhes e submissão de respostas
-- **Sugestão por IA** — Geração automática de sugestão de resposta com base no conteúdo do processo
-- **API REST** — Endpoints para recebimento e consulta de processos via sistemas externos
-- **Autenticação** — Login, registro e gerenciamento de perfil
-- **Tema Escuro** — Interface com glassmorphism e tema escuro nativo
+- **Autenticação Avançada** — Login com tema escuro + glassmorphism, áreas isoladas por usuário
+- **Aprendizado Sob Demanda** — Upload de PDFs/TXT ou digitação de conteúdo para processamento por IA
+- **Banco de Questões** — Simulados interativos com feedback em tempo real
+- **Slides Explicativos** — Resumos visuais renderizados na tela com navegação interativa
+- **Podcasts Didáticos** — Scripts de debate simulando duas pessoas discutindo a matéria
+- **OpenCode Integrado** — Editor de código diretamente no navegador para modificar o ambiente de aprendizado
+
+## Arquitetura AWS Free Tier
+
+| Componente | Tecnologia | Custo |
+|---|---|---|
+| **Instância** | EC2 t2.micro / t3.micro (1 única) | Free Tier (750h/mês) |
+| **Isolamento** | Docker (containers por usuário) | Zero custo adicional |
+| **Banco** | SQLite (containerizado) | Sem RDS, sem custo |
+| **Cache** | Database cache via SQLite | Sem Redis/Memcached |
+| **Storage** | Local (disco da instância) | Sem S3 |
+
+### Abordagem de Isolamento (Abordagem A - Recomendada)
+
+Uma única instância EC2 Free Tier rodando Docker, onde cada novo usuário ganha um container isolado de forma leve, sem custos extras.
 
 ## Requisitos
 
-- PHP 8.2+
+- PHP 8.3+
 - Composer
 - Node.js 22+
-- SQLite (desenvolvimento) / MySQL (produção)
+- Docker (produção) ou SQLite (desenvolvimento)
 
-## Instalação
+## Instalação (Desenvolvimento)
 
 ```bash
-git clone https://github.com/TyagoAlves/Plataforma.git
-cd Plataforma
+git clone https://github.com/TyagoAlves/MindContainer.git
+cd MindContainer
 cp .env.example .env
 php artisan key:generate
 composer install
@@ -33,53 +46,60 @@ php artisan migrate --seed
 php artisan serve
 ```
 
-## Deploy
+## Deploy (Produção - Docker)
 
-O sistema está disponível em: [http://18.188.189.197](http://18.188.189.197)
+```bash
+chmod +x deploy.sh
+./deploy.sh docker
+```
 
-### Credenciais de Teste
+Ou manualmente:
 
-- **E-mail:** admin@exemple.com
-- **Senha:** admin123
+```bash
+sudo docker compose up -d --build
+sudo docker compose exec app php artisan migrate --force
+```
 
 ## Estrutura do Projeto
 
 ```
-Plataforma/
+MindContainer/
 ├── app/
 │   ├── Http/Controllers/
-│   │   ├── ProcessController.php    # CRUD e resposta de processos
-│   │   ├── ApiController.php        # API REST
-│   │   └── DashboardController.php  # Dashboard
+│   │   ├── StudyController.php         # Dashboard de estudos
+│   │   ├── SubjectController.php       # CRUD de matérias
+│   │   ├── StudyMaterialController.php # Upload e processamento
+│   │   ├── QuizController.php          # Simulados interativos
+│   │   ├── SlideController.php         # Slides explicativos
+│   │   ├── PodcastController.php       # Podcasts didáticos
+│   │   └── OpenCodeController.php      # Editor de código
 │   └── Models/
-│       ├── Process.php
-│       ├── ProcessCategory.php
-│       └── ProcessResponse.php
+│       ├── Subject.php
+│       ├── StudyMaterial.php
+│       ├── Quiz.php
+│       ├── QuizQuestion.php
+│       ├── Slide.php
+│       └── Podcast.php
 ├── database/
-│   └── migrations/                  # Schema do banco
-├── resources/
-│   └── views/
-│       ├── processes/               # Views de listagem e detalhe
-│       ├── layouts/                 # App, guest, navigation
-│       ├── auth/                    # Login, registro, senha
-│       └── profile/                 # Perfil do usuário
-└── routes/
-    ├── web.php                      # Rotas web
-    └── api.php                      # Rotas da API
+│   └── migrations/                     # Schema do banco
+├── resources/views/study/              # Views da plataforma
+│   ├── subjects/
+│   ├── materials/
+│   ├── quizzes/
+│   ├── slides/
+│   ├── podcasts/
+│   └── opencode/
+└── routes/web.php                      # Rotas da aplicação
 ```
 
-## API
+## Monitoramento de Armazenamento
 
-| Método | Rota | Descrição | Autenticação |
-|--------|------|-----------|-------------|
-| POST | `/api/processes/receive` | Receber novo processo | Pública |
-| GET | `/api/processes/{id}` | Consultar processo | Sanctum |
-| POST | `/api/processes/{id}/response` | Enviar resposta | Sanctum |
-
-## Documentação
-
-- [Modelagem do Sistema](public/docs/modelagem_sistema.pdf) — Diagramas, arquitetura e especificação técnica do sistema.  
-  Acesse também em: [http://18.188.189.197/docs/modelagem_sistema.pdf](http://18.188.189.197/docs/modelagem_sistema.pdf)
+O agente DevOps monitora `df -h` continuamente. Se o disco chegar a 85%, limpa caches:
+```bash
+sudo docker system prune -f
+sudo docker compose exec app php artisan optimize:clear
+sudo docker compose exec app php artisan view:clear
+```
 
 ## Licença
 

@@ -1,87 +1,104 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ config('app.name', 'Laravel') }}</title>
-    <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-</head>
-<body class="font-sans antialiased dark">
-    <div class="min-h-screen bg-gray-900 flex flex-col items-center justify-center p-4 sm:p-8">
-        <div class="w-full max-w-4xl">
-            <div class="backdrop-blur-xl bg-white/10 border border-white/20 rounded-3xl shadow-2xl p-8 sm:p-12 text-center glass-panel">
-                <h1 class="text-4xl sm:text-6xl font-bold text-white mb-6 tracking-tight">
-                    Plataforma de Gestão de Processos
-                </h1>
-                <p class="text-lg sm:text-xl text-gray-300 mb-8 max-w-2xl mx-auto leading-relaxed">
-                    Sistema inteligente para gestão, análise e tramitação de processos administrativos
-                    com integração de inteligência artificial para sugestão de respostas.
-                </p>
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-10 text-left">
-                    <div class="backdrop-blur-lg bg-white/5 border border-white/10 rounded-xl p-6 glass-card">
-                        <div class="text-indigo-400 text-3xl mb-3">
-                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="csrf-token" content="{{ csrf_token() }}">
+        <title>{{ config('app.name', 'MindContainer') }}</title>
+        <link rel="preconnect" href="https://fonts.bunny.net">
+        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+        @vite(['resources/css/app.css', 'resources/js/app.js'])
+    </head>
+    <body class="font-sans antialiased dark bg-gray-950 text-gray-100">
+        <div class="min-h-screen flex flex-col">
+
+            <nav class="backdrop-blur-xl bg-gray-900/80 border-b border-white/10">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="flex justify-between h-16">
+                        <div class="flex items-center">
+                            <x-application-logo class="block h-9 w-auto fill-current text-indigo-400" />
+                            <span class="ml-3 text-xl font-semibold text-white">MindContainer</span>
                         </div>
-                        <h3 class="text-white font-semibold mb-2">Gestão de Processos</h3>
-                        <p class="text-gray-400 text-sm">Organize e acompanhe todos os processos em um único lugar com categorização inteligente.</p>
-                    </div>
-                    <div class="backdrop-blur-lg bg-white/5 border border-white/10 rounded-xl p-6 glass-card">
-                        <div class="text-emerald-400 text-3xl mb-3">
-                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                        <div class="flex items-center space-x-4">
+                            @auth
+                                <a href="{{ route('dashboard') }}" class="text-sm text-gray-300 hover:text-white transition">Dashboard</a>
+                            @else
+                                <a href="{{ route('login') }}" class="text-sm text-gray-300 hover:text-white transition">Login</a>
+                                @if (Route::has('register'))
+                                    <a href="{{ route('register') }}" class="px-4 py-2 bg-indigo-600 rounded-lg text-white text-sm font-medium hover:bg-indigo-500 transition">Cadastre-se</a>
+                                @endif
+                            @endauth
                         </div>
-                        <h3 class="text-white font-semibold mb-2">IA Integrada</h3>
-                        <p class="text-gray-400 text-sm">Sugestões inteligentes de respostas geradas por inteligência artificial para agilizar o trabalho.</p>
-                    </div>
-                    <div class="backdrop-blur-lg bg-white/5 border border-white/10 rounded-xl p-6 glass-card">
-                        <div class="text-amber-400 text-3xl mb-3">
-                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
-                        </div>
-                        <h3 class="text-white font-semibold mb-2">Segurança e Conformidade</h3>
-                        <p class="text-gray-400 text-sm">Acesso seguro com autenticação e conformidade com normas de governança de TI.</p>
                     </div>
                 </div>
-                @if (Route::has('login'))
-                    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            </nav>
+
+            <main class="flex-1">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+                    <div class="text-center mb-16">
+                        <h1 class="text-5xl font-bold bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent mb-4">
+                            Estude com Inteligência
+                        </h1>
+                        <p class="text-xl text-gray-400 max-w-3xl mx-auto">
+                            Transforme seus materiais de estudo em simulados interativos, slides explicativos e podcasts didáticos com o poder da IA.
+                        </p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+                        <div class="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-8 text-center hover:bg-white/10 transition">
+                            <div class="text-4xl mb-4">📝</div>
+                            <h3 class="text-lg font-semibold text-white mb-2">Simulados Inteligentes</h3>
+                            <p class="text-gray-400 text-sm">Gere bancos de questões personalizados com feedback em tempo real para cada matéria.</p>
+                        </div>
+                        <div class="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-8 text-center hover:bg-white/10 transition">
+                            <div class="text-4xl mb-4">📊</div>
+                            <h3 class="text-lg font-semibold text-white mb-2">Slides Explicativos</h3>
+                            <p class="text-gray-400 text-sm">Resumos visuais dinâmicos gerados automaticamente a partir do seu conteúdo.</p>
+                        </div>
+                        <div class="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-8 text-center hover:bg-white/10 transition">
+                            <div class="text-4xl mb-4">🎧</div>
+                            <h3 class="text-lg font-semibold text-white mb-2">Podcasts Didáticos</h3>
+                            <p class="text-gray-400 text-sm">Áudios com debates simulados para aprender em qualquer lugar, a qualquer hora.</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
+                        <div class="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-8 hover:bg-white/10 transition">
+                            <div class="flex items-center mb-4">
+                                <span class="text-2xl mr-3">📤</span>
+                                <h3 class="text-lg font-semibold text-white">Upload de Materiais</h3>
+                            </div>
+                            <p class="text-gray-400 text-sm">Faça upload de PDFs, textos ou digite diretamente o conteúdo da sua matéria. A IA processa e gera automaticamente os recursos de estudo.</p>
+                        </div>
+                        <div class="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-8 hover:bg-white/10 transition">
+                            <div class="flex items-center mb-4">
+                                <span class="text-2xl mr-3">💻</span>
+                                <h3 class="text-lg font-semibold text-white">OpenCode Integrado</h3>
+                            </div>
+                            <p class="text-gray-400 text-sm">Ambiente de desenvolvimento integrado diretamente no navegador. Visualize e modifique o código fonte do seu ambiente de aprendizado.</p>
+                        </div>
+                    </div>
+
+                    <div class="text-center">
                         @auth
-                            <a href="{{ url('/dashboard') }}" class="inline-flex items-center justify-center px-8 py-4 backdrop-blur-lg bg-indigo-600/80 hover:bg-indigo-600 text-white font-semibold rounded-xl transition-all duration-200 border border-indigo-400/30 shadow-lg hover:shadow-indigo-500/25">
-                                Acessar Dashboard
-                                <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+                            <a href="{{ route('study.dashboard') }}" class="inline-flex items-center px-8 py-4 bg-indigo-600 rounded-xl text-white font-semibold text-lg hover:bg-indigo-500 transition shadow-lg shadow-indigo-500/25">
+                                Acessar Plataforma
                             </a>
                         @else
-                            <a href="{{ route('login') }}" class="inline-flex items-center justify-center px-8 py-4 backdrop-blur-lg bg-indigo-600/80 hover:bg-indigo-600 text-white font-semibold rounded-xl transition-all duration-200 border border-indigo-400/30 shadow-lg hover:shadow-indigo-500/25">
-                                Entrar no Sistema
-                                <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+                            <a href="{{ route('register') }}" class="inline-flex items-center px-8 py-4 bg-indigo-600 rounded-xl text-white font-semibold text-lg hover:bg-indigo-500 transition shadow-lg shadow-indigo-500/25">
+                                Começar Agora
                             </a>
-                            @if (Route::has('register'))
-                                <a href="{{ route('register') }}" class="inline-flex items-center justify-center px-8 py-4 backdrop-blur-lg bg-white/10 hover:bg-white/20 text-white font-semibold rounded-xl transition-all duration-200 border border-white/20 shadow-lg">
-                                    Criar Conta
-                                </a>
-                            @endif
                         @endauth
                     </div>
-                @endif
-            </div>
-            <div class="text-center mt-8 text-gray-500 text-sm">
-                &copy; {{ date('Y') }} Plataforma de Gestão de Processos. Todos os direitos reservados.
-            </div>
-        </div>
-    </div>
+                </div>
+            </main>
 
-    <style>
-        .glass-panel {
-            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
-        }
-        .glass-card {
-            transition: all 0.3s ease;
-        }
-        .glass-card:hover {
-            transform: translateY(-4px);
-            background: rgba(255,255,255,0.1);
-            border-color: rgba(255,255,255,0.3);
-        }
-    </style>
-</body>
+            <footer class="border-t border-white/10 py-8">
+                <div class="max-w-7xl mx-auto px-4 text-center text-gray-500 text-sm">
+                    {{ config('app.name', 'MindContainer') }} — Plataforma de Estudos com IA &copy; {{ date('Y') }}
+                </div>
+            </footer>
+
+        </div>
+    </body>
 </html>
