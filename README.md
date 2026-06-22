@@ -78,7 +78,8 @@ Plataforma/
 
 ## Documentação
 
-- [Modelagem do Sistema](/docs/modelagem_sistema.pdf) — Diagramas, arquitetura e especificação técnica do sistema.
+- [Modelagem do Sistema](public/docs/modelagem_sistema.pdf) — Diagramas, arquitetura e especificação técnica do sistema.  
+  Acesse também em: [http://18.188.189.197/docs/modelagem_sistema.pdf](http://18.188.189.197/docs/modelagem_sistema.pdf)
 
 ## Licença
 
