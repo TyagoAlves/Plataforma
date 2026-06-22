@@ -78,7 +78,7 @@ Plataforma/
 
 ## Documentação
 
-- [Modelagem do Sistema](/storage/modelagem_sistema.pdf) — Diagramas, arquitetura e especificação técnica do sistema.
+- [Modelagem do Sistema](/docs/modelagem_sistema.pdf) — Diagramas, arquitetura e especificação técnica do sistema.
 
 ## Licença
 
